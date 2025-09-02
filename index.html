@@ -22,7 +22,7 @@
 
   <form id="messageForm">
     <input type="text" id="name" placeholder="Your name" required />
-    <input type="text" id="message" placeholder="Your message" required />
+    <textarea id="message" placeholder="Your message" required rows="4" cols="40"></textarea>
     <button type="submit">Submit</button>
   </form>
 
@@ -80,7 +80,8 @@
         messages.forEach(msg => {
           const li = document.createElement('li');
           const date = new Date(msg.createdAt).toLocaleString();
-          li.textContent = `${msg.name}: "${msg.message}" (${date})`;
+          const formattedMessage = msg.message.replace(/\n/g, '<br>');
+          li.innerHTML = `<strong>${msg.name}</strong>:<br>${formattedMessage}<br><small>${date}</small>`;
           messagesList.appendChild(li);
         });
       } catch (err) {
