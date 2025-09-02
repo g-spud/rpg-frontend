@@ -1,18 +1,56 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="gameCSS.css">
-    <canvas id="canvas"></canvas>
+  <meta charset="UTF-8" />
+  <title>Guestbook</title>
 </head>
-
 <body>
-    <div id="game-container"></div>
+  <h1>Guestbook</h1>
+
+  <form id="messageForm">
+    <input type="text" id="name" placeholder="Your name" required />
+    <input type="text" id="message" placeholder="Your message" required />
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Messages:</h2>
+  <ul id="messagesList"></ul>
+
+  <script>
+    const form = document.getElementById('messageForm');
+    const messagesList = document.getElementById('messagesList');
+    const API_URL = 'https://your-backend.onrender.com/api/messages'; // Replace with actual Render URL
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      if (!name || !message) return;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, message }),
+      });
+
+      form.reset();
+      loadMessages(); // refresh the list
+    });
+
+    async function loadMessages() {
+      const res = await fetch(API_URL);
+      const messages = await res.json();
+
+      messagesList.innerHTML = '';
+      messages.forEach(msg => {
+        const li = document.createElement('li');
+        li.textContent = `${msg.name}: ${msg.message}`;
+        messagesList.appendChild(li);
+      });
+    }
+
+    loadMessages(); // Load on page load
+  </script>
 </body>
-
-<script src="interfaceJS.js"></script>
-
 </html>
