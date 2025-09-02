@@ -3,6 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Guestbook</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 8px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
 </head>
 <body>
   <h1>Guestbook</h1>
@@ -19,38 +32,65 @@
   <script>
     const form = document.getElementById('messageForm');
     const messagesList = document.getElementById('messagesList');
-    const API_URL = 'https://rpg-backend-zkme.onrender.com/api/messages'; // Replace with actual Render URL
 
+    // ✅ Your actual backend URL (no trailing slash)
+    const API_BASE_URL = 'https://rpg-backend-zkme.onrender.com/api/messages';
+
+    // Handle form submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const name = document.getElementById('name').value.trim();
       const message = document.getElementById('message').value.trim();
 
       if (!name || !message) return;
 
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, message }),
-      });
+      try {
+        const res = await fetch(API_BASE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, message }),
+        });
 
-      form.reset();
-      loadMessages(); // refresh the list
+        if (!res.ok) {
+          throw new Error(`POST failed: ${res.status}`);
+        }
+
+        form.reset();
+        loadMessages();
+      } catch (err) {
+        alert('Error submitting message: ' + err.message);
+        console.error(err);
+      }
     });
 
+    // Load and display messages
     async function loadMessages() {
-      const res = await fetch(API_URL);
-      const messages = await res.json();
+      try {
+        const res = await fetch(API_BASE_URL);
+        if (!res.ok) {
+          throw new Error(`GET failed: ${res.status}`);
+        }
 
-      messagesList.innerHTML = '';
-      messages.forEach(msg => {
-        const li = document.createElement('li');
-        li.textContent = `${msg.name}: ${msg.message}`;
-        messagesList.appendChild(li);
-      });
+        const messages = await res.json();
+
+        messagesList.innerHTML = '';
+        messages.forEach(msg => {
+          const li = document.createElement('li');
+          const date = new Date(msg.createdAt).toLocaleString();
+          li.textContent = `${msg.name}: "${msg.message}" (${date})`;
+          messagesList.appendChild(li);
+        });
+      } catch (err) {
+        messagesList.innerHTML = '<li>Error loading messages.</li>';
+        console.error('Failed to load messages:', err);
+      }
     }
 
-    loadMessages(); // Load on page load
+    // Load messages when the page loads
+    loadMessages();
   </script>
 </body>
 </html>
